@@ -1,15 +1,10 @@
-import json
-import sys
 import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.stats import norm
 import seaborn as sns
 import pandas as pd
-from sklearn.neighbors import KernelDensity
 import csv
-from Bio.Blast.Applications import NcbiblastpCommandline
 import multiprocessing
 import time
 
@@ -32,7 +27,7 @@ def prepare(o):
 	reader_blast = csv.reader(open(o+'.blast.txt'))
 	result_blast = []
 	result_diamond = []
-	
+
 	for row in reader_diamond:
 		result_diamond.append(float(row[0].split("\t")[11]))
 
@@ -84,7 +79,7 @@ def main(args):
 		exit("Error - Missing input file")
 
 	# inputs
-	inputSeq = args.input 
+	inputSeq = args.input
 	outputFile = args.output
 	desc = args.desc
 
@@ -114,7 +109,7 @@ def run():
 	parser.add_argument('-t','--threaded', dest="threaded", default="yes", help='enabled threading. Options are Yes or No (Default: Yes)')
 	parser.add_argument('-d','--desc', dest="desc", default="na", help='Description for the input')
 	args = parser.parse_args()
-	main(args)	
+	main(args)
 
 if __name__ == '__main__':
 	run()
