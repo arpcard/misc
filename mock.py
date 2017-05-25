@@ -97,7 +97,7 @@ def main(args):
     desc = args.desc
 
     # threaded
-    if args.threaded.lower() == "yes":
+    if args.threaded:
         threaded(inputSeq, outputFile, desc)
     else:
         # non threaded
@@ -119,14 +119,14 @@ def plot_graph(delta, filename='test.png'):
 def run():
     parser = argparse.ArgumentParser(description='benchmark tests')
     parser.add_argument('-i', '--input', dest="input", default=None,
-                        help='input file (fasta)')
+                        required=True, help='input file (fasta)')
     parser.add_argument('-o', '--output', dest="output", default="summary",
-                        help='output file (tab-delimited)')
-    parser.add_argument('-t', '--threaded', dest="threaded", default="yes",
-                        help='enabled threading. Options are Yes or No \
-                                (Default: Yes)')
+                        required=True, help='output file (tab-delimited)')
+    parser.add_argument('-t', '--threaded', dest="threaded",
+                        action='store_true',
+                        help='enable threading (default True)')
     parser.add_argument('-d', '--desc', dest="desc", default="na",
-                        help='Description for the input')
+                        required=True, help='Description for the input')
     args = parser.parse_args()
     main(args)
 
