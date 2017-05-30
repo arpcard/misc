@@ -25,15 +25,21 @@ def blast(i, o):
 
 def diamond(i, o):
     cfilter = "--index-chunks 1 --block-size 1 --quiet --more-sensitive \
-            --max-target-seqs 1 --evalue 0.001 --threads 32 --max-hsps 1 "
+            --max-target-seqs 1 --evalue 0.001 --threads 2 --max-hsps 1 "
     os.system('diamond blastp --in proteindb.fsa --db protein.db  \
             --query {} --outfmt 6 --out {}.diamond.txt \
             --salltitles {}'.format(i, o, cfilter))
 
 
 def prepare(o):
-    result_diamond = pd.read_csv('{}.diamond.txt'.format(o))
-    result_blast = pd.read_csv('{}.blast.txt'.format(o))
+
+    blast6table_header = "qseqid sseqid pident length mismatch gapopen \
+                            qstart qend sstart send evalue bitscore".split()
+
+    result_diamond = pd.read_csv('{}.diamond.txt'.format(o),
+                                 header=None, names=blast6table_header, sep='\t')
+    result_blast = pd.read_csv('{}.blast.txt'.format(o),
+                               header=None, names=blast6table_header, sep='\t')
 
     return (result_blast, result_diamond)
 
@@ -75,14 +81,27 @@ def non_threaded(i, o, desc):
 
 
 def plot(b, d, desc):
-    plot_graph(b['evalue'] - d['evalue'],
-               'diff_evalue_{}.png'.format(desc))
-    plot_graph((b['evalue'] - d['evalue']) / b['evalue'],
-               'norm_evalue_{}.png'.format(desc))
 
-    plot_graph(b['bitscore'] - d['bitscore'],
+    # log1p transform to improve visualisation
+    delta_log_evalue = np.log1p(b['evalue']) - np.log1p(d['evalue'])
+    delta_bitscore = b['bitscore'] - d['bitscore']
+
+    plot_graph(delta_log_evalue,
+                'BLAST vs DIAMOND ln(E-value+1) Differences KDE',
+               'diff_evalue_{}.png'.format(desc))
+
+    plt.clf()
+    sns.kdeplot(delta_log_evalue, delta_bitscore, kernel='gau')
+    plt.title('BLAST vs DIAMOND bitscore and ln(E-value+1) Differences')
+    plt.xlabel("delta(ln(E-value+1))")
+    plt.ylabel("delta(bitscore)")
+    plt.savefig('2d_evalue_bitscore_kde.png')
+
+    plot_graph(delta_bitscore,
+                'BLAST vs DIAMOND Bitscore Differences KDE',
                'diff_bitscore_{}.png'.format(desc))
-    plot_graph((b['bitscore'] - d['bitscore']) / b['bitscore'],
+    plot_graph(delta_bitscore / b['bitscore'],
+                'BLAST vs DIAMOND Normalised Bitscore Differences KDE',
                'norm_bitscore_{}.png'.format(desc))
 
 
@@ -106,11 +125,10 @@ def main(args):
     print('Total running time {}s'.format(round(time.time() - t0, 3)))
 
 
-def plot_graph(delta, filename='test.png'):
+def plot_graph(delta, title, filename='test.png'):
     plt.clf()
     sns.kdeplot(delta, kernel='gau')
-    plt.title("Gaussian Kernel Density Estimation \
-            - DIAMOND vs BLAST bitscores")
+    plt.title(title)
     plt.xlabel("delta scores")
     plt.ylabel("density")
     plt.savefig(filename)
@@ -123,8 +141,8 @@ def run():
     parser.add_argument('-o', '--output', dest="output", default="summary",
                         required=True, help='output file (tab-delimited)')
     parser.add_argument('-t', '--threaded', dest="threaded",
-                        action='store_true',
-                        help='enable threading (default True)')
+                        action='store_false',
+                        help='disable threading (default on)')
     parser.add_argument('-d', '--desc', dest="desc", default="na",
                         required=True, help='Description for the input')
     args = parser.parse_args()
