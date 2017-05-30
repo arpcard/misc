@@ -37,7 +37,8 @@ def prepare(o):
                             qstart qend sstart send evalue bitscore".split()
 
     result_diamond = pd.read_csv('{}.diamond.txt'.format(o),
-                                 header=None, names=blast6table_header, sep='\t')
+                                 header=None, names=blast6table_header,
+                                 sep='\t')
     result_blast = pd.read_csv('{}.blast.txt'.format(o),
                                header=None, names=blast6table_header, sep='\t')
 
@@ -87,7 +88,7 @@ def plot(b, d, desc):
     delta_bitscore = b['bitscore'] - d['bitscore']
 
     plot_graph(delta_log_evalue,
-                'BLAST vs DIAMOND ln(E-value+1) Differences KDE',
+               'BLAST vs DIAMOND ln(E-value+1) Differences KDE',
                'diff_evalue_{}.png'.format(desc))
 
     plt.clf()
@@ -98,10 +99,10 @@ def plot(b, d, desc):
     plt.savefig('2d_evalue_bitscore_kde.png')
 
     plot_graph(delta_bitscore,
-                'BLAST vs DIAMOND Bitscore Differences KDE',
+               'BLAST vs DIAMOND Bitscore Differences KDE',
                'diff_bitscore_{}.png'.format(desc))
     plot_graph(delta_bitscore / b['bitscore'],
-                'BLAST vs DIAMOND Normalised Bitscore Differences KDE',
+               'BLAST vs DIAMOND Normalised Bitscore Differences KDE',
                'norm_bitscore_{}.png'.format(desc))
 
 
