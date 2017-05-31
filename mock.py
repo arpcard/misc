@@ -25,7 +25,7 @@ def blast(i, o):
 
 def diamond(i, o):
     cfilter = "--index-chunks 1 --block-size 1 --quiet --more-sensitive \
-            --max-target-seqs 1 --evalue 0.001 --threads 2 --max-hsps 1 "
+            --max-target-seqs 1 --evalue 0.001 --threads 32 --max-hsps 1 "
     os.system('diamond blastp --in proteindb.fsa --db protein.db  \
             --query {} --outfmt 6 --out {}.diamond.txt \
             --salltitles {}'.format(i, o, cfilter))
